@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - محاكاة تحديد الهوية</title>
+    <title>تسجيل الدخول - محاكاة المصادقة متعددة العوامل (2FA)</title>  
     <style>
         /* CSS Styling */
         :root {
-            --primary-color: #007bff;
-            --id-selection-color: #00A38D; /* تم تغيير اللون ليتناسب مع الهوية */
+            --primary-color: #0bc70e; /* أزرق داكن جديد للزر الأساسي */
+            --id-selection-color: #00A38D; /* لون هوية NFC/المفتاح الأمني */
             --bg-color: #f4f4f4;
             --card-bg: #fff;
         }
@@ -21,10 +21,9 @@
             height: 100vh;
             margin: 0;
             background-color: var(--bg-color);
-            transition: background-color 0.5s;
         }
 
-        /* Container for Auth Forms */
+        /* Container for Auth Forms (Login Only) */
         .auth-container {
             background-color: var(--card-bg);
             padding: 30px;
@@ -32,7 +31,6 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.15);
             width: 380px;
             text-align: center;
-            transition: transform 0.3s ease;
         }
 
         h2 {
@@ -41,16 +39,17 @@
             font-size: 1.8em;
         }
 
-        input[type="text"], input[type="password"], input[type="email"], select {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
             border: 1px solid #ccc;
             border-radius: 6px;
             box-sizing: border-box;
+            text-align: right; /* لضمان محاذاة النص داخل الإدخال */
         }
         
-        /* Primary Button Style (for Login/Register) */
+        /* Primary Button Style (for Login) */
         .btn-primary {
             background-color: var(--primary-color);
             color: white;
@@ -59,51 +58,16 @@
             border-radius: 6px;
             cursor: pointer;
             width: 100%;
-            margin-top: 15px;
+            margin-top: 15px;       
             font-size: 1.1em;
             transition: background-color 0.3s;
         }
 
         .btn-primary:hover {
-            background-color: #0056b3;
+            background-color: #056e0f;
         }
 
-        /* ID Selection Button Style */
-        .btn-id-select {
-            background-color: var(--id-selection-color);
-            color: white;
-            padding: 12px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 25px;
-            font-weight: bold;
-            font-size: 1.1em;
-            transition: background-color 0.3s;
-        }
-
-        .btn-id-select:hover {
-            background-color: #007a6a;
-        }
-
-        /* Form Switch Link */
-        .switch-form {
-            margin-top: 20px;
-            cursor: pointer;
-            color: var(--primary-color);
-            font-size: 0.9em;
-            text-decoration: underline;
-        }
-
-        hr {
-            border: 0;
-            height: 1px;
-            background: #eee;
-            margin: 25px 0;
-        }
-
-        /* ID Selection Modal/Popup Style (Apple Pay/iOS style mock) */
+        /* ID Selection Modal/Popup Style (2FA Prompt) */
         .id-selection-modal {
             position: fixed;
             top: 0;
@@ -113,40 +77,46 @@
             background-color: rgba(0, 0, 0, 0.7);
             display: none; /* Hidden by default */
             justify-content: center;
-            align-items: flex-end; /* Appears from bottom like Apple Pay */
+            align-items: center; /* توسيط رأسي للمحتوى */
             z-index: 1000;
         }
 
         .id-selection-content {
             background-color: var(--card-bg);
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            width: 100%;
-            max-width: 450px;
-            padding: 30px 20px;
-            text-align: right;
-            animation: slideUp 0.3s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        
-        .id-selection-logo {
+            border-radius: 12px; /* تم تعديل الزوايا لتكون مربعة */
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
             text-align: center;
-            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-out;
         }
-
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
         .id-selection-logo p {
-            font-size: 1.1em; 
+            font-size: 1.2em; 
             font-weight: bold; 
-            color: #333;
+            color: var(--id-selection-color);
+            margin-bottom: 15px;
         }
 
+        .nfc-icon {
+            font-size: 5em;
+            color: var(--id-selection-color);
+            margin: 20px 0;
+            display: block; /* لضمان التوسيط */
+        }
+        
         .id-confirm-button {
-            background-color: #4CAF50;
-            width: 100%;
+            background-color: var(--id-selection-color);
+            margin-top: 20px;
+        }
+        
+        .id-confirm-button:hover {
+            background-color: #007a6a;
         }
 
         /* Homepage Style */
@@ -160,7 +130,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
         .homepage h1 { color: var(--id-selection-color); }
-        .homepage p { font-size: 1.2em; }
+        .homepage p { font-size: 1.2em; margin-bottom: 30px;}
         .logout-btn { background-color: #dc3545; }
         .logout-btn:hover { background-color: #c82333; }
         
@@ -168,130 +138,79 @@
 </head>
 <body>
 
-    <div class="auth-container">
-        <form id="login-form" onsubmit="mockLogin(event)" style="display: block;">
-            <h2>تسجيل الدخول</h2>
-            <input type="text" placeholder="اسم المستخدم أو البريد الإلكتروني" required>
-            <input type="password" placeholder="كلمة المرور" required>
+    <div class="auth-container" id="auth-container">
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX///8OlEcAkkIAkD7a7eGEwptRqnJIqW4AkD0Vlkrz+/d8wJb1+vgGmEuLxaGu2L612cJmtIMAjTZQrnVfsn7S6dvs9/EinFUAjDLi8ei53MdtuIl0u4/E4tAonlmbzq4zo2Kk0bVApWeXzKvM59Yo9jjAAAAEr0lEQVR4nO2dW7OqOBBGIYhGQdHIXURQ//9vHCSBtKN1rDpDFJhvPeyHrrCrl9y6Q1ViWQAAAAAAAAAAAAAAAAAAAACA+ZDtdzf/10kYJF8yzvni12kYIw45s22bzdYwShzbnrPhwmb2rA39UgnO1tDj9rwNM8eeuaE7d0O/YjM3zPq7cK6GudCC86xpgm3SUD7+JFX862xM4Meaza+TAQDMl7MXHh+sDvPs8eMqdZhEzPJ9aB3nXpdGYu5V22X2delu9oakPYThRIHh9IHhr/DrVVIV0VMsP1VlGDyFoqJMjjWNbOqwavv5rScDIzWMtqIpI530pENxJRxmM1FlOlYIx26qTXbvI2fBmwMfNs5VRsZpGAk1AyjCLrTZqkzZup9sOaiCjIlOMeb91CFbydAoDfWHBlt0V+WhT9TpTuy+rzhZotqiWhcwozYMyARgJUOZnta1uTqJVx3j6l48kT5izIYHmpS87fakuhT7NhTTglNdzUcyvz1mwys9YfJ5Si4/m1/a0FNbpB4rq4kYkjNhO9IwoIbyksyoodKZiiFteNZyFjcieQop7a/J76BeflMxXOiz0z849RckVqkHp/7y2V3LkzG03E6Rse7ld+6tRa5C8brzEeoUTsfQKtI2Vc503VanbaqO0EVatG3PItOlz3QMrfwq0pR59FvRIuRpykNaq8beNk1FlfeBCRk2Zdoi+3fIz7KXKd1sQT8oTcrwr4AhDMcPDGFoingR5UF9ubnnPpTlN9d7cOtDm6jeed4jqt8PWXSuLzvX9dSR4zSMlmsmBG8QKinL92zBnRbW6QRlM6INpV3fn6/WXLRRMebKO9v2KbClihW69Fa9RdP398l3Df1Zh0bdW5BWqTOknZ8y9JPXKYtQ5z5qw5AkpQyDV0PaH3J5lVLpURsuXw1vrx1wTnt8ZbjVoakZvunxAxjKI2EIQyPAEIYwhKF5YCgN9zCUR8IQhkaAIQxhCEPzwBCGMISheWAIQxjC0DwwhCEMYWgeGMIQhjA0DwxhCEMYmgeGMIQhDM0DQxjCEIbmgSEMYQhD88AQhjCEoXlgCEMYwtA8MIQhDGFoHhjCEIYwNA8M/4+GYl6GiQw9GcrF2Z4Md3IYNTzIEDVcvywY+g3+bMiOMvR0lcp1W6khV4u0EkO1JvbTJp3Vd9UUfzZMVerEUBQyRAxZqVZu1YaMq/NFDEVt/YI3hq5od9hyHJ52iwoGOhQqG585KiaS7v669iHWrVDo6SPdL2oR3hjewzA8NBSX/r7JutBO7/Tghg8OJ3ffr71bH+UwL+hXID7LI0/F5VfLQr4xnBkwnD4wnD5DG97d5epUj2lf3GEN/YNoXomOKM+fx36LYQ1XvCtp7p8Hf4lBDXd6+6ByNLuqDmlIty1R++2MgOVrS/fX0LV4nWKQ9AZgSMMz6bFY+Hn8dxjS8E4MndPn8d9hSMNY/69+TezfM6Qh3e2Lx5+Hf4dB3xYx6/7bj/r5dxDDbsbsP7BIHvsDMoffPo/9FsRQDFCHbHbVel0exlPRNIby1mGD/e5+lo2p7rasot01NCmvxZh+90GJWzajKSMBAAAAAAAAAAAAAAAAAAAAMMs/O+mCbu34en8AAAAASUVORK5CYII=" alt="">
+            <h2>تسجيل الدخول    </h2>
+            <input type="text" id="username" placeholder="اسم المستخدم" required>
+            <input type="password" id="password" placeholder="كلمة المرور" required>
             <button class="btn-primary" type="submit">تسجيل الدخول</button>
-            <div class="switch-form" onclick="switchForm()">ليس لديك حساب؟ **سجل الآن**</div>
-            <hr>
-            <button type="button" class="btn-id-select" onclick="showIDSelectionModal()">
-                تسجيل الدخول/التسجيل عبر بطاقة الهوية
-            </button>
-        </form>
-
-        <form id="register-form" onsubmit="mockRegister(event)" style="display: none;">
-            <h2>تسجيل جديد</h2>
-            <input type="text" placeholder="الاسم الكامل" required>
-            <input type="email" placeholder="البريد الإلكتروني" required>
-            <input type="password" placeholder="كلمة المرور" required>
-            <button class="btn-primary" type="submit">إنشاء حساب</button>
-            <div class="switch-form" onclick="switchForm()">لديك حساب بالفعل؟ **سجل الدخول**</div>
-            <hr>
-            <button type="button" class="btn-id-select" onclick="showIDSelectionModal()">
-                تسجيل الدخول/التسجيل عبر بطاقة الهوية
-            </button>
         </form>
     </div>
 
     <div class="homepage" id="homepage">
-        <h1>مرحباً بك!</h1>
-        <p>لقد تم تسجيل دخولك بنجاح باستخدام الآلية الوهمية.</p>
-        <p>هذه هي الصفحة الرئيسية للموقع.</p>
+        <h1>✅ تم تسجيل الدخول بنجاح!</h1>
+        <p>  لقد نجحت في المصادقة باستخدام كلمة المرور  وبطاقة الهوية </p>
         <button class="btn-primary logout-btn" onclick="logout()">تسجيل الخروج</button>
     </div>
 
     <div class="id-selection-modal" id="id-selection-modal">
         <div class="id-selection-content">
             <div class="id-selection-logo">
-                <p>اختيار بطاقة الهوية</p>
+                <p>المصادقة  بخطوتين  - بطاقة الهوية NFC</p>
             </div>
-            <p style="text-align: center; margin-bottom: 25px; color: #555;">يرجى اختيار بطاقة الهوية التي تود استخدام بياناتها:</p>
-
-            <div style="text-align: right; margin-bottom: 20px;">
-                <label for="id-type" style="display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.95em;">اختر نوع الهوية:</label>
-                <select id="id-type" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px;">
-                    <option value="national">الهوية الوطنية (بطاقة الأحوال)</option>
-                    <option value="residence">بطاقة الإقامة</option>
-                    <option value="driving">رخصة القيادة</option>
-                </select>
-            </div>
+            <p style="color: #555;">يرجى وضع بطاقة الهوية الخاص بك بالقرب من قارئ NFC لإكمال تسجيل الدخول.</p>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyDJYoYLpH9RFuot6puhpbrOJxz2j9WDxJVw&s" alt="">
             
-            <input type="text" id="id-number" placeholder="أدخل رقم الهوية/الإقامة" required>
-            
-            <button class="btn-primary id-confirm-button" onclick="mockIDSelectionConfirmation()">
-                جلب البيانات والتسجيل/الدخول
+            <button class="btn-primary id-confirm-button" onclick="mockIDTap()">
+                محاكاة مسح بطاقة الهوية (TAP)
+            </button>
+            <button class="btn-primary" onclick="hideIDSelectionModal()" style="background-color: #6c757d; margin-top: 10px;">
+                إلغاء
             </button>
         </div>
     </div>
 
     <script>
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const authContainer = document.querySelector('.auth-container');
+        const authContainer = document.getElementById('auth-container');
         const homepage = document.getElementById('homepage');
-        // تم تغيير اسم المتغير للنافذة المنبثقة
         const idSelectionModal = document.getElementById('id-selection-modal'); 
 
-        // وظيفة التبديل بين تسجيل الدخول والتسجيل
-        function switchForm() {
-            if (loginForm.style.display === 'block') {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
+        // بيانات الاعتماد المطلوبة لطلب 2FA
+        const REQUIRED_USERNAME = 'admin';
+        const REQUIRED_PASSWORD = 'admin1234';
+
+        // وظيفة معالجة محاولة تسجيل الدخول
+        function handleLogin(event) {
+            event.preventDefault(); // منع إرسال النموذج فعلياً
+
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+
+            if (usernameInput === REQUIRED_USERNAME && passwordInput === REQUIRED_PASSWORD) {
+                // إذا كانت بيانات الاعتماد هي 'admin'/'admin1234'، ننتقل إلى خطوة 2FA
+                showIDSelectionModal();
             } else {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
+                // لأي بيانات اعتماد أخرى، يتم تسجيل الدخول فوراً (كمستخدم عادي) أو إظهار خطأ.
+                // هنا سنظهر خطأ للمحاكاة
+                alert("خطأ في بيانات الاعتماد. يرجى استخدام (admin / admin1234) لاختبار 2FA.");
             }
         }
 
-        // محاكاة تسجيل الدخول التقليدي
-        function mockLogin(event) {
-            event.preventDefault(); // منع إرسال النموذج فعلياً
-            alert("تم تسجيل الدخول بنجاح! (محاكاة)");
-            showHomepage();
-        }
-        
-        // محاكاة التسجيل التقليدي
-        function mockRegister(event) {
-            event.preventDefault(); // منع إرسال النموذج فعلياً
-            alert("تم التسجيل بنجاح! (محاكاة)");
-            showHomepage();
-        }
-
-        // إظهار نافذة اختيار الهوية الوهمية
+        // إظهار نافذة اختيار الهوية (خطوة 2FA)
         function showIDSelectionModal() {
             idSelectionModal.style.display = 'flex';
         }
         
-        // محاكاة تأكيد اختيار الهوية ونقل المستخدم للصفحة الرئيسية
-        function mockIDSelectionConfirmation() {
-            const selectedID = document.getElementById('id-type').value;
-            const idNumber = document.getElementById('id-number').value;
-            
-            if (!idNumber) {
-                alert("يرجى إدخال رقم الهوية للمحاكاة.");
-                return;
-            }
-
+        // إخفاء نافذة اختيار الهوية
+        function hideIDSelectionModal() {
             idSelectionModal.style.display = 'none';
-            
-            let idName;
-            switch(selectedID) {
-                case 'national':
-                    idName = 'الهوية الوطنية';
-                    break;
-                case 'residence':
-                    idName = 'بطاقة الإقامة';
-                    break;
-                case 'driving':
-                    idName = 'رخصة القيادة';
-                    break;
-                default:
-                    idName = 'بطاقة الهوية';
-            }
+        }
 
-            alert(`تمت محاكاة جلب البيانات من ${idName} رقم (${idNumber}) والتسجيل/الدخول بنجاح!`);
+        // محاكاة عملية مسح بطاقة الهوية عبر NFC
+        function mockIDTap() {
+            hideIDSelectionModal();
+            // هنا ستتم عملية التحقق الفعلي من الـ NFC، وفي المحاكاة ننتقل مباشرةً إلى الصفحة الرئيسية
             showHomepage();
         }
 
@@ -305,6 +224,9 @@
         function logout() {
             homepage.style.display = 'none';
             authContainer.style.display = 'block';
+            // إعادة تعيين حقول الإدخال 
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
             alert("تم تسجيل الخروج بنجاح.");
         }
     </script>
